@@ -1,5 +1,4 @@
 #pollen analysis
-
 #this is for the ragweed pollen sampling that was conducted near patches of ragweed on 9/16/15, 9/17/15, and 9/22/15
 #the purpose is to see how ragweed concentrations diminish as a function of distance from source and from other covariates
 #several other pilots had been conducted, but this is the final one
@@ -13,11 +12,11 @@ setwd("Q:/Ibanez Lab/Dan Katz/post doc search/NIH F32/ragweed air sampling")
 
 
 #load in pollen count data
-p <- read.csv("Pollen Grain Counting Record_151015.csv")
+p <- read.csv("Pollen Grain Counting Record_151019.csv")
 p <- subset(p, !is.na(p$Count.by.Dan))  #taking out the unmeasured stuff for now
 head(p)
 
-
+#renaming some variables 
 p$sampler <- p$Sample
 p$round <- p$Batch
 p$p <- p$Count.by.Dan
