@@ -13,7 +13,7 @@ library(dplyr)
 
 #load in pollen count data
 p <- read.csv("Pollen Grain Counting Record_151019.csv")
-p <- subset(p, !is.na(p$Count.by.Dan))  #taking out the unmeasured stuff for now
+#p <- subset(p, !is.na(p$grains_dk))  #taking out the unmeasured stuff for now
 head(p)
 
 #getting distances for each transect on the filter
@@ -59,7 +59,7 @@ s_summary$p_per_m2_mean
 #pollen as a function of distance
 ggplot(s_summary, aes(x= distance_measured, y = p_per_m2_mean, ymin = p_per_m2_mean - p_per_m2_sd,
                       ymax = p_per_m2_mean + p_per_m2_sd)) + geom_point() + 
-  ylab("distance from patch") + xlab("pollen grains per m3") + theme_bw() +
+  xlab("distance from patch") + ylab("pollen grains per m3") + theme_bw() +
   facet_wrap( ~ round) +
   geom_errorbar()
 
@@ -69,19 +69,25 @@ head(w)
 ggplot(w, aes(x = min_since_start, y = speed)) + geom_point() + facet_wrap( ~ round)
 
 #direction 
-ggplot(w, aes(x = direction, y = speed)) + geom_point(alpha = 0.2) + facet_wrap( ~ round) + 
+ggplot(w, aes(x = direction, y = speed)) + geom_point(alpha = 0.2, size = 3) + facet_wrap( ~ round) + 
   coord_polar() + theme_bw()
 
 #pollen collectors displayed spatially
 ggplot(s_summary, aes(x = heading, y = distance_measured, color = log(p_per_m2_mean))) + 
-  geom_point() + facet_wrap( ~ round) + 
+  geom_point(size = 5) + facet_wrap( ~ round) + 
   coord_polar() + theme_bw()
 
+#pollen collectors AND wind
+ggplot(data = s_summary, aes(x = heading, y = distance_measured)) + 
+  geom_point(aes(color = log(p_per_m2_mean)), size = 5)+
+  geom_point(data = w, aes(x = direction, y = speed * 5), alpha = 0.5)+
+   coord_polar() + theme_bw() +  facet_wrap( ~ round)  
 
-#pollen as a function of wind direction and speed
+
+
 
 
 #pollen grains as a function of interior vs. exterior of slide
 ggplot(p, aes(x = as.factor(transect), y = p_per_mm2)) + geom_boxplot() 
-ggplot(p, aes(x = as.factor(transect), y = p_per_mm2)) + geom_jitter() 
+ggplot(p, aes(x = as.factor(transect), y = p_per_mm2, color = as.factor(sampler))) + geom_jitter(size = 5) + theme_bw() 
 
