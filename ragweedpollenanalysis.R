@@ -32,34 +32,52 @@ s_summary <- tbl_df(p) %>%
             p_per_mm2_sd = sd(p_per_mm2, na.rm = TRUE))
 
 #coversion to cubic meters - will do individually for air samplers
-s_summary$p_per_m2_mean <- (s_summary$ p_per_mm2_mean * 4 * 4 ) /  #1/4 of slide has transects, 1/4 of that area is viewed
+#it might be that 1/4 of area is a bad estimate - should do the basic geometry
+#a = pie *37mm (?) ^2 
+s_summary$p_per_m2_mean <- (s_summary$p_per_mm2_mean * 4 * 4 ) /  #1/4 of slide has transects, 1/4 of that area is viewed
                             ((2/1000)*120)  # 2 L per min (= o.002 m3), 120 min,
 
+s_summary$p_per_m2_sd <- (s_summary$p_per_mm2_sd * 4 * 4 ) /  #1/4 of slide has transects, 1/4 of that area is viewed
+  ((2/1000)*120)  # 2 L per min (= o.002 m3), 120 min,
 
-#load in collector data
-c <- read.csv("samplinglocations151015.csv")
-c <- subset(c, !is.na(c$distance_measured))  #taking out the unmeasured stuff for now
+
+#load in collector data and link it to s_summary
+c <- read.csv("samplinglocations151019.csv")
+s_summary <- left_join(s_summary, c, by = c("round", "sampler"))
 
 #load in wind data  
-w <- read.csv("winddata151015.csv")
-
-#linking datasets
-head(p)
-head(c)  
-pc <- left_join(p, c, by = c("sampler", "round"))
-
-#data summaries
-avg_by_sampler <- tbl_df(pc) %>% group_by(Sample) %>% summarise(mean_p = mean(p)) 
-pc <- left_join(pc, avg_by_sampler, by = "Sample")
-
+w <- read.csv("winddata151019.csv")
 
 
 #####################  
 #pollen visualization
 #####################
-head(pc)
-p$p <- p$Count.by.Dan
-hist(p$p)
+s_summary$p_per_m2_mean
+
+#pollen as a function of distance
+ggplot(s_summary, aes(x= distance_measured, y = p_per_m2_mean, ymin = p_per_m2_mean - p_per_m2_sd,
+                      ymax = p_per_m2_mean + p_per_m2_sd)) + geom_point() + 
+  ylab("distance from patch") + xlab("pollen grains per m3") + theme_bw() +
+  facet_wrap( ~ round) +
+  geom_errorbar()
+
+#wind roses for each site
+head(w)
+#speed over time
+ggplot(w, aes(x = min_since_start, y = speed)) + geom_point() + facet_wrap( ~ round)
+
+#direction 
+ggplot(w, aes(x = direction, y = speed)) + geom_point() + facet_wrap( ~ round) + 
+  coord_polar() + theme_bw()
+
+
+#pollen as a function of wind direction and speed
+
+#pollen grains as a function of interior vs. exterior of slide
+ggplot(p, aes(x = as.factor(transect), y = p_per_mm2)) + geom_boxplot() 
+ggplot(p, aes(x = as.factor(transect), y = p_per_mm2)) + geom_jitter() 
+
+
 
 
 ggplot(p, aes(x = as.factor(Sample), y = p)) + geom_boxplot()
@@ -71,7 +89,7 @@ ggplot(pc, aes(x = distance_measured, y = p, color = Transect)) + geom_point()
 ggplot(pc, aes(x = distance_measured))
 
 
-ggplot(pc, aes(x=distance_measured, y = p_mean.avg)) + geom_point()
+ggplot(pc, aes(x=distance_measured, y = p_mean.avg)) + geom_boxplot()
 
 
 #wind visualization
