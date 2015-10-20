@@ -1,4 +1,4 @@
-Batch,Sample,Transect,X,Y,Count by Dan,Count by Yundi,Average Count,notes
+round,sampler,transect,filter_x,filter_y,grains_dk,grains_yy,grains_average,notes
 1,1,1,33,29 - 11,3,3,3,this transect runs into the blue line.  
 1,1,2,35,12 - 29,5,5,,
 1,1,3,37,29 - 13,4,1,,

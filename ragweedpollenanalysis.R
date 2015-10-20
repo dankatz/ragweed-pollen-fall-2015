@@ -4,25 +4,37 @@
 #several other pilots had been conducted, but this is the final one
 
 #set up work environment
+rm(list = ls())
+
 library(ggplot2)
 library(dplyr)
 
-rm(list = ls())
-setwd("Q:/Ibanez Lab/Dan Katz/post doc search/NIH F32/ragweed air sampling")
-
+#setwd("Q:/Ibanez Lab/Dan Katz/post doc search/NIH F32/ragweed air sampling")
 
 #load in pollen count data
 p <- read.csv("Pollen Grain Counting Record_151019.csv")
 p <- subset(p, !is.na(p$Count.by.Dan))  #taking out the unmeasured stuff for now
 head(p)
 
-#renaming some variables 
-p$sampler <- p$Sample
-p$round <- p$Batch
-p$p <- p$Count.by.Dan
+#getting distances for each transect on the filter
+p$filter_y
+p$filter_y_start <- as.numeric(substr(as.character(p$filter_y), 1,2))
+p$filter_y_end <- as.numeric(substr(as.character(p$filter_y), 6,7))
+p$filter_dist <- abs(p$filter_y_start - p$filter_y_end)
 
-#mean and sd of each 
-p$p_mean <- summarise()
+p$p_per_mm2 <- p$grains_dk / (p$filter_dist * 0.5)
+hist(p$p_per_mm2)
+
+#mean and sd of each filter
+s_summary <- tbl_df(p) %>% 
+  group_by(round, sampler) %>% 
+  summarize(p_per_mm2_mean = mean(p_per_mm2, na.rm = TRUE),
+            p_per_mm2_sd = sd(p_per_mm2, na.rm = TRUE))
+
+#coversion to cubic meters - will do individually for air samplers
+s_summary$p_per_m2_mean <- (s_summary$ p_per_mm2_mean * 4 * 4 ) /  #1/4 of slide has transects, 1/4 of that area is viewed
+                            ((2/1000)*120)  # 2 L per min (= o.002 m3), 120 min,
+
 
 #load in collector data
 c <- read.csv("samplinglocations151015.csv")
