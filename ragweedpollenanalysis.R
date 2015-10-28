@@ -64,25 +64,24 @@ head(w)
 #speed over time
 ggplot(w, aes(x = min_since_start, y = speed)) + geom_point() + facet_wrap( ~ round)
 
-#direction 
-ggplot(w, aes(x = direction, y = speed)) + geom_point(alpha = 0.2, size = 3) + facet_wrap( ~ round) + 
-  coord_polar() + theme_bw()
+#wind rose
+library(clifro)
+windrose(speed = w$speed, direction = w$direction, facet = as.factor(w$round), 
+         speed_cuts = c(0, 0.5, 1, 1.5, 2.0, 2.5,4), n_directions = 20,
+         ggtheme = "bw", col_pal = "YlOrRd", n_col = 3, legend_title = "Wind Speed\n(m/s)")
+
 
 #pollen collectors displayed spatially
 ggplot(s_summary, aes(x = heading, y = distance_measured, color = log10(p_per_m3))) + 
   geom_point(size = 4) + facet_wrap( ~ round) + 
   coord_polar() + theme_bw() +
-  xlab("distance (m)") + ylab("distance (m)") +
-  scale_color_continuous(na.value = "gray80", high = "gray10", low = "gray80",
-                           name = expression(paste("log pollen per m"^"3"))) +
+  xlab("") + ylab("distance (m)") +
+#   scale_color_continuous(na.value = "gray80", high = "gray10", low = "gray80",
+#                            name = expression(paste("log pollen per m"^"3"))) +
+   scale_color_continuous(na.value = "gray", high = "red", low = "gray",
+                            name = expression(paste("log pollen per m"^"3"))) +
   theme(axis.ticks = element_blank(), axis.text.x = element_blank())
 
-#wind rose
-install.packages("clifro")
-library(clifro)
-windrose(speed = w$speed, direction = w$direction, facet = as.factor(w$round), 
-         speed_cuts = c(0,0.5,1,1.5,2,2.5,4), n_directions = 20,
-         ggtheme = "bw", col_pal = "YlOrRd", n_col = 3, legend_title = "Wind Speed\n(m/s)")
 
 
 #pollen collectors AND wind
@@ -92,9 +91,19 @@ ggplot(data = subset(s_summary, heading != 82), aes(x = heading, y = distance_me
    coord_polar() + theme_bw() +  facet_wrap( ~ round)  
 
 
+#graph for proposal
+  s_summary_round1 <- subset(s_summary, round == 1)
+  s_summary_round1$wind_direction <- "downwind"
+  s_summary_round1$wind_direction[s_summary_round1$sampler == 2 |s_summary_round1$sampler == 4 ] <- "upwind"
+  
+  ggplot(s_summary_round1, aes(x= distance_measured, y = p_per_m3, shape = wind_direction, color = wind_direction)) + 
+   geom_point(size =3) + 
+    xlab("distance from patch (m)") + ylab(expression(paste("pollen per m"^"3"))) + theme_bw() +
+    scale_color_manual(values = c("black","gray70"), name = " ") +
+    scale_shape_discrete(name = " ") + theme(legend.position=c(0.8,0.8))
 
-
-
+  ggsave("pollen_graph_proposal.jpg", width = 100, height = 75, dpi = 400, units = "mm")
+  
 #pollen grains as a function of interior vs. exterior of slide
 ggplot(p, aes(x = as.factor(transect), y = p_per_mm2)) + geom_boxplot() 
 ggplot(p, aes(x = as.factor(transect), y = p_per_mm2, color = as.factor(sampler))) + geom_jitter(size = 5) + theme_bw() 
